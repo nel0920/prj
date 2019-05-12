@@ -5,7 +5,7 @@ from flask import Flask
 from DashAccidents.config import *
 
 
-
+# Set up the Dash instance.
 # instantiate a Flask object
 server = Flask(__name__, static_url_path='/DashAccidents/static')
 server.secret_key = os.environ.get('secret_key', 'secret')
