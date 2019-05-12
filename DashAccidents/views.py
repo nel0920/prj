@@ -1,8 +1,14 @@
+#!/usr/bin/env python
+
+import sys
 import os
+import traceback
+import json
+from jinja2 import TemplateNotFound
+
 from random import randint
 
 import dash
-
 
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
@@ -16,11 +22,29 @@ from flask_googlemaps import GoogleMaps
 from flask_googlemaps import Map, icons
 
 
+from DashAccidents import server, app 
+from DashAccidents.config import *
+from DashAccidents.utils import *
+
+
+MAPBOX = "pk.eyJ1IjoibmVsMDkyMCIsImEiOiIyMzM5YzgyNWQ4MDM5NzQ2N2NjM2MwODM1ZGE3OTVmOCJ9.zDLTPL1xCEwBzK4aVxAETg"
+GOOGLEMAP = "AIzaSyB-dPy4xZFJZ5wbpS_rQpFBTgGZt0C6zdY"
+
+# matching route and handler
+@server.route("/", defaults={"filename": "index.html"})
+@server.route("/<path:filename>", methods = ["GET", "POST"])
+def display(filename):
+    try:
+        return render_template(filename)
+    except TemplateNotFound:
+        return server.send_static_file(filename)
+
+@server.route('/abc')
+def hello_world():
+    return render_template('test1.html')
 ### GLOBALS, DATA & INTIALISE THE APP ###
 
-# Key of the Map
-MAPBOX = 'pk.eyJ1IjoibmVsMDkyMCIsImEiOiIyMzM5YzgyNWQ4MDM5NzQ2N2NjM2MwODM1ZGE3OTVmOCJ9.zDLTPL1xCEwBzK4aVxAETg'
-GOOGLEMAP = 'AIzaSyB-dPy4xZFJZ5wbpS_rQpFBTgGZt0C6zdY'
+
 
 # Make the colours consistent for each type of accident
 SEVERITY_LOOKUP = {'Fatal' : 'red',
@@ -41,7 +65,9 @@ DAYSORT = dict(zip(['Friday', 'Monday', 'Saturday','Sunday', 'Thursday', 'Tuesda
 FONT_FAMILY = "PT Sans" 
 
 # Read in data from csv stored on github
-csvLoc = 'assets/data/accidents2015_V.csv'  
+csvLoc = 'DashAccidents/static/data/accidents2015_V.csv'  
+
+loc = 'DashAccidents/static/data/hk/17pubdb.xls'
 #csvLoc =
 #'https://raw.githubusercontent.com/richard-muir/uk-car-accidents/master/accidents2015_V.csv'
 acc = read_csv(csvLoc, index_col = 0).dropna(how='any', axis = 0)
@@ -52,22 +78,20 @@ acc = acc[~acc['Speed_limit'].isin([0, 10])]
 # Create an hour column
 acc['Hour'] = acc['Time'].apply(lambda x: int(x[:2]))
 
-loc = 'assets/data/hk/17pubdb.xls'
 data = read_excel(loc, index_col=0)
 
-
 # Set up the Dash instance.  Big thanks to @jimmybow for the boilerplate code
-server = Flask(__name__)
-server.secret_key = os.environ.get('secret_key', 'secret')
-app = dash.Dash(__name__, server=server,  assets_external_path='http://localhost:5000/assets/')
-app.config.supress_callback_exceptions = True
-app.config['GOOGLEMAPS_KEY'] = GOOGLEMAP
-GoogleMaps(server)
+#server = Flask(__name__)
+#server.secret_key = os.environ.get('secret_key', 'secret')
+#app = dash.Dash(__name__, server=server,  static_external_path='http://localhost:5000/static/')
+#app.config.supress_callback_exceptions = True
+#app.config['GOOGLEMAPS_KEY'] = GOOGLEMAP
+#app.config.from_object(DevelopmentConfig)
+#GoogleMaps(server)
 
 # Include the external CSS
-#cssURL =
-#"https://rawgit.com/richard-muir/uk-car-accidents/master/road-safety.css"
-cssURL = 'css/main.css'
+cssURL = "https://rawgit.com/richard-muir/uk-car-accidents/master/road-safety.css"
+#cssURL = 'DashAccidents/static/css/main.css'
 app.css.append_css({
     "external_url": cssURL
 })
@@ -202,11 +226,9 @@ def render_tab_content(tab):
                         })])],
                 style={'paddingBottom' : 20})
     elif tab == 'tab_hk':
-        return googlemap("map", 37.4419, -122.1419, varname="simplemap")
+        return []
         
-@server.route('/abc')
-def hello_world():
-    return render_template('test1.html')
+
 
 
 ## APP INTERACTIVITY THROUGH CALLBACK FUNCTIONS TO UPDATE THE CHARTS ##
@@ -444,8 +466,3 @@ def updateMapBox(severity, weekdays, time):
     }
     fig = dict(data=traces, layout=layout) 
     return fig
-
-
-# Run the Dash app
-if __name__ == '__main__':
-    app.server.run(debug=True, threaded=True, host='0.0.0.0', port=5000)
