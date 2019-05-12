@@ -1,3 +1,3 @@
 
-web: gunicorn app:server --timeout 300
+worker: python __main__.py
 
