@@ -80,7 +80,7 @@ acc['Hour'] = acc['Time'].apply(lambda x: int(x[:2]))
 
 # Set up the Dash instance.
 # instantiate a Flask object
-server = Flask(__name__, static_url_path='/DashAccidents/static')
+server = Flask(__name__)
 server.secret_key = os.environ.get('secret_key', 'secret')
 app = dash.Dash(__name__, server=server)#,  assets_external_path='https://raw.githubusercontent.com/nel0920/prj/master/DashAccidents/static/')
 app.config.supress_callback_exceptions = True
