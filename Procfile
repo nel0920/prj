@@ -1,1 +1,1 @@
-web: python <__main__.py>
+web: gunicorn DashAccidents.app:DashAccidents.server --timeout 300
