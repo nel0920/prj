@@ -62,8 +62,8 @@ DAYSORT = dict(zip(data_guide_days['label'], data_guide_days['code']))
 #DAYSORT_2015 = dict(zip(['Friday', 'Monday', 'Saturday','Sunday', 'Thursday',
 #'Tuesday', 'Wednesday'], [4, 0, 5, 6, 3, 1, 2]))
 acc = read_csv(csvAccLoc, index_col = 0).dropna(how='any', axis = 0)
-cas = read_csv(csvCasLoc, index_col = 0).dropna(how='any', axis = 0)
-vec = read_csv(csvVecLoc, index_col = 0).dropna(how='any', axis = 0)
+#cas = read_csv(csvCasLoc, index_col = 0).dropna(how='any', axis = 0)
+#vec = read_csv(csvVecLoc, index_col = 0).dropna(how='any', axis = 0)
 
 acc['Accident_Severity'] = acc['Accident_Severity'].apply(lambda k: SEVERITYS[k])
 acc['Day_of_Week'] = acc['Day_of_Week'].apply(lambda k: DAYS[k])
