@@ -28,17 +28,7 @@ from DashAccidents.utils import *
 
 
 # matching route and handler
-@server.route("/", defaults={"filename": "index.html"})
-@server.route("/<path:filename>", methods = ["GET", "POST"])
-def display(filename):
-    try:
-        return render_template(filename)
-    except TemplateNotFound:
-        return server.send_static_file(filename)
 
-@server.route('/abc')
-def hello_world():
-    return render_template('test1.html')
 
 #server = Flask(__name__)
 #server.secret_key = os.environ.get('secret_key', 'secret')
