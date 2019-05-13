@@ -1,0 +1,12 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/slnx.sqlite
+DashAccidents/__pycache__/__init__.cpython-36.pyc
+DashAccidents/__pycache__/config.cpython-36.pyc
+DashAccidents/__pycache__/utils.cpython-36.pyc
+DashAccidents/__pycache__/views.cpython-36.pyc
+.vs/Dash_Accidents/v16/.suo
+.vs/PythonSettings.json
+.vs/VSWorkspaceState.json
