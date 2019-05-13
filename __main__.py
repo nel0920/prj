@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from DashAccidents import app
+#from DashAccidents import app
 
 # prevent execution when this module is imported by others
-if __name__ == "__main__":
-
-    app.server.run(debug=True, threaded=True)
+#if __name__ == "__main__":
+#    app.server.run(debug=True, threaded=True)
