@@ -218,15 +218,7 @@ app.layout = html.Div([html.Div([html.H1('Traffic Accidents in the UK',
                         })])],
                 style={'paddingBottom' : 20})])
 
-@app.callback(Output('tabs_content', 'children'),
-              [Input('tabs', 'value')])
-def render_tab_content(tab):
-    # Holds the widgets & Descriptions
-    if tab == 'tab_uk':   
-        return []
-    elif tab == 'tab_hk':
-        return []
-        
+
 
 
 
