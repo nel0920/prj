@@ -1,10 +1,5 @@
 #!/usr/bin/env python
-import sys
 import os
-import traceback
-import json
-from jinja2 import TemplateNotFound
-
 from random import randint
 
 import dash
@@ -16,25 +11,6 @@ import dash_html_components as html
 from pandas import read_csv, read_excel, DataFrame
 
 from flask import Flask, render_template
-from flask_googlemaps import GoogleMaps
-from flask_googlemaps import Map, icons
-
-import dash
-from dash.dependencies import Input, Output, State
-
-class Config(object):
-    name = "Dash_App_Accidents"
-    DEBUG = False
-    TESTING = False
-
-class ProductionConfig(Config):
-    pass
-
-class DevelopmentConfig(Config):
-    DEBUG = True
-
-class TestingConfig(Config):
-    TESTING = True
 
 
 ### GLOBALS, DATA & INTIALISE THE APP ###
@@ -43,9 +19,6 @@ GOOGLEMAP = "AIzaSyB-dPy4xZFJZ5wbpS_rQpFBTgGZt0C6zdY"
 
 # Make the colours consistent for each type of accident
 SEVERITY_LOOKUP = {'Fatal' : 'red',
-                    'Serious' : 'orange',
-                    'Slight' : 'yellow'}
-SEVERITY_LOOKUP_2015 = {'Fatal' : 'red',
                     'Serious' : 'orange',
                     'Slight' : 'yellow'}
 # Need to downsample the number of Slight and Serious accidents to display them
