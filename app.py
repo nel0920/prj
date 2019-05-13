@@ -61,7 +61,7 @@ DAYS = dict(zip(data_guide_days['code'], data_guide_days['label']))
 DAYSORT = dict(zip(data_guide_days['label'], data_guide_days['code']))
 #DAYSORT_2015 = dict(zip(['Friday', 'Monday', 'Saturday','Sunday', 'Thursday',
 #'Tuesday', 'Wednesday'], [4, 0, 5, 6, 3, 1, 2]))
-acc = read_csv(csvAccLoc, index_col = 0).dropna(how='any', axis = 0)
+acc = read_csv(csvAccLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
 #cas = read_csv(csvCasLoc, index_col = 0).dropna(how='any', axis = 0)
 #vec = read_csv(csvVecLoc, index_col = 0).dropna(how='any', axis = 0)
 
