@@ -36,22 +36,13 @@ SERIOUS_FRAC = 0.5
 FONT_FAMILY = "PT Sans" 
 
 # Read in data from csv stored on github
-csv_2017 = 'DashAccidents/static/data/accidents_2017.csv'  
-csv_2016 = 'DashAccidents/static/data/accidents_2016.csv'  
-#csvLoc = 'DashAccidents/static/data/accidents2015_V.csv'
-#csvLoc = 'DashAccidents/static/data/accidents_2017.test.csv'
-#csvLoc =
-#'https://raw.githubusercontent.com/richard-muir/uk-car-accidents/master/accidents2015_V.csv'
-xlsLoc = 'DashAccidents/static/data/data_guides.xls'
-
-
 def getCsvLoc(argument):
     switcher = {
         '2017A': 'DashAccidents/static/data/accidents_2017.csv',
         '2017C': 'DashAccidents/static/data/casualtes_2017.csv',
         '2017V': 'DashAccidents/static/data/vehicles_2017.csv',
         '2016': 'DashAccidents/static/data/accidents_2016.csv',
-        '2015': 'DashAccidents/static/data/accidents_2015.csv',
+        '2015': 'DashAccidents/static/data/accidents_2015.csv',#'https://raw.githubusercontent.com/richard-muir/uk-car-accidents/master/accidents2015_V.csv',
         'DG':'DashAccidents/static/data/data_guides.xls'
     }
     return switcher.get(argument, "None")
