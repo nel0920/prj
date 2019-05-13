@@ -11,7 +11,12 @@ from DashAccidents.config import *
 # update functions.
 # This on updates the bar.
 
-def updateUKBarChart(severity, weekdays, time):
+
+@app.callback(Output(component_id='bar', component_property='figure'),
+    [Input(component_id='severityChecklist', component_property='values'),
+    Input(component_id='dayChecklist', component_property='values'),
+    Input(component_id='hourSlider', component_property='value'),])
+def updateBarChart(severity, weekdays, time):
     # The rangeslider is selects inclusively, but a python list stops before
     # the last number in a range
     hours = [i for i in range(time[0], time[1] + 1)]

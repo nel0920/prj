@@ -48,17 +48,12 @@ app.css.append_css({
 ## SETTING UP THE APP LAYOUT ##
 
 # Main layout container
-app.layout = html.Div([#Tab controller
-    html.Div([dcc.Tabs(id="tabs", value='tab_uk', children=[dcc.Tab(label='UK', value='tab_uk'),
-            dcc.Tab(label='HK', value='tab_hk'),]),
-        html.Div(id = 'tabs_content')])])
+#app.layout = html.Div([#Tab controller
+#    html.Div([dcc.Tabs(id="tabs", value='tab_uk', children=[dcc.Tab(label='UK', value='tab_uk'),
+#            dcc.Tab(label='HK', value='tab_hk'),]),
+ #       html.Div(id = 'tabs_content')])])
 
-@app.callback(Output('tabs_content', 'children'),
-              [Input('tabs', 'value')])
-def render_tab_content(tab):
-    # Holds the widgets & Descriptions
-    if tab == 'tab_uk':   
-        return html.Div([html.H1('Traffic Accidents in the UK',
+app.layout = html.Div([html.H1('Traffic Accidents in the UK',
                 style={
                     'paddingLeft' : 50,
                     'fontFamily' : FONT_FAMILY
@@ -75,7 +70,7 @@ def render_tab_content(tab):
                     }),
                 dcc.Checklist(# Checklist for the three different severity values
                     options=[
-                        {'label': sev, 'value': sev} for sev in acc['Accident_Severity'].unique()
+                        {'label': sev + ' [{:,}]'.format(len(list(filter(lambda k: k==sev, acc['Accident_Severity'])))), 'value': sev} for sev in acc['Accident_Severity'].unique()
                     ],
                     values=[sev for sev in acc['Accident_Severity'].unique()],
                     labelStyle={
@@ -93,7 +88,7 @@ def render_tab_content(tab):
                 dcc.Checklist(# Checklist for the dats of week, sorted using the sorting dict created
                  # earlier
                     options=[
-                        {'label': day[:3], 'value': day} for day in sorted(acc['Day_of_Week'].unique(), key=lambda k: DAYSORT[k])
+                        {'label': age , 'value': age} for age in sorted(AGES)
                         #{'label': DAYSORT[day][:3], 'value': day} for day in sorted(DAYSORT)
                     ],
                     values=[day for day in acc['Day_of_Week'].unique()],
@@ -105,6 +100,26 @@ def render_tab_content(tab):
                         'paddingBottom' : 5,
                         },
                     id="dayChecklist",),
+                html.Div('''Select the age group of the accident:''',
+                    style={
+                        'paddingTop' : 20,
+                        'paddingBottom' : 10
+                    }),
+                dcc.Checklist(# Checklist for the dats of week, sorted using the sorting dict created
+                 # earlier
+                    options=[
+                        {'label': day[:3] + ' [{:,}]'.format(len(list(filter(lambda k: k==day, acc['Day_of_Week'])))), 'value': day} for day in sorted(acc['Day_of_Week'].unique(), key=lambda k: DAYSORT[k])
+                        #{'label': DAYSORT[day][:3], 'value': day} for day in sorted(DAYSORT)
+                    ],
+                    values=[day for day in acc['Day_of_Week'].unique()],
+                    #values=[day for day in DAYSORT],
+                    labelStyle={  # Different padding for the checklist elements
+                        'display': 'inline-block',
+                        'paddingRight' : 10,
+                        'paddingLeft' : 10,
+                        'paddingBottom' : 5,
+                        },
+                    id="ageChecklist",),
                 html.Div('''Select the hours in which the accident occurred (24h clock):''',
                     style={
                         'paddingTop' : 20,
@@ -176,13 +191,12 @@ def render_tab_content(tab):
                             'fontStyle' : 'italic'
                         })])],
                 style={'paddingBottom' : 20})
-    elif tab == 'tab_hk':
-        return []
-        
 
-@app.callback(Output(component_id='bar', component_property='figure'),
-    [Input(component_id='severityChecklist', component_property='values'),
-    Input(component_id='dayChecklist', component_property='values'),
-    Input(component_id='hourSlider', component_property='value'),])
-def updateBarChart(severity, weekdays, time):
-    return updateUKBarChart(severity, weekdays, time)
+#@app.callback(Output('tabs_content', 'children'),[Input('tabs', 'value')])
+#def render_tab_content(tab):
+# Holds the widgets & Descriptions
+ #   if tab == 'tab_uk':   
+#        return []
+#    elif tab == 'tab_hk':
+#        return []
+        

@@ -61,24 +61,29 @@ xlsDGLoc = getCsvLoc('DG')
 
 data_guide_days = read_excel(xlsDGLoc, 'Day of Week')
 data_guide_severitys = read_excel(xlsDGLoc, 'Accident Severity')
+data_guide_ages = read_excel(xlsDGLoc, 'Age Band')
 
 SEVERITYS = dict(zip(data_guide_severitys['code'], data_guide_severitys['label']))
 DAYS = dict(zip(data_guide_days['code'], data_guide_days['label']))
+AGES = dict(zip(data_guide_ages['code'], data_guide_ages['label']))
 
 DAYSORT = dict(zip(data_guide_days['label'], data_guide_days['code']))
 #DAYSORT_2015 = dict(zip(['Friday', 'Monday', 'Saturday','Sunday', 'Thursday', 'Tuesday', 'Wednesday'], [4, 0, 5, 6, 3, 1, 2]))
 
 acc = read_csv(csvAccLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
-cas = read_csv(csvCasLoc, index_col = 0).dropna(how='any', axis = 0)
-vec = read_csv(csvVecLoc, index_col = 0).dropna(how='any', axis = 0)
+cas = read_csv(csvCasLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
+vec = read_csv(csvVecLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
 
 acc['Accident_Severity'] = acc['Accident_Severity'].apply(lambda k: SEVERITYS[k])
-acc['Day_of_Week'] = acc['Day_of_Week'].apply(lambda k: DAYS[k])
 # Remove observations where speed limit is 0 or 10.  There's only three and it
 # adds a lot of
 #  complexity to the bar chart for no material benefit
 acc = acc[~acc['Speed_limit'].isin([0, 10])]
 # Create an hour column
 acc['Hour'] = acc['Time'].apply(lambda x: int(x[:2]))
+acc['Day_of_Week'] = acc['Day_of_Week'].apply(lambda k: DAYS[k])
 
+vec['Age_Band_of_Driver'] = vec['Age_Band_of_Driver'].apply(lambda k: AGES[k])
+
+cas['Age_Band_of_Driver'] = cas['Age_Band_of_Casualty'].apply(lambda k: AGES[k])
 #data = read_excel(loc, index_col=0)
