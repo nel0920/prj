@@ -1,1 +1,1 @@
-web: gunicorn DashAccidents.app:DashAccidents.server --timeout 300
+web: gunicorn DashAccidents.app:.server --timeout 300
