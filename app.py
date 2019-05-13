@@ -96,19 +96,7 @@ app.css.append_css({
     "external_url": cssURL
 })
 
-# matching route and handler
-@server.route("/", defaults={"filename": "index.html"})
-@server.route("/<path:filename>", methods = ["GET", "POST"])
-def display(filename):
-    try:
-        return render_template(filename)
-    except TemplateNotFound:
-        return server.send_static_file(filename)
 
-@server.route('/abc')
-def hello_world():
-    return render_template('test1.html')
-## SETTING UP THE APP LAYOUT ##
 
 # Main layout container
 app.layout = html.Div([html.Div([html.H1('Traffic Accidents in the UK',
