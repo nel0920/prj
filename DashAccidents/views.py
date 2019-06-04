@@ -37,47 +37,36 @@ app.css.append_css({
 # Main layout container
 app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                 #style={
-                #    'width' : '100%', 
+                #    'width' : '100%',
                 #    'text-align': 'center',
                 #    'fontFamily' : FONT_FAMILY
-                #    }),            
-                html.Div([# Holds the map & the widgets
-
-                    dcc.Graph(id="map") # Holds the map in a div to apply styling to it
-                 
-                ],
-                style={
-                    "width" : '100%', 
-                    'display' : 'inline-block', 
-                    'paddingTop' : 20,
-                    'paddingRight' : 50, 
-                    'paddingLeft' : 50,
-                    'boxSizing' : 'border-box',
-                    'fontFamily' : FONT_FAMILY
-                    }),
+                #    }),                
                 html.Div([html.H3('''The United Kindom suffered {:,} traffic accidents in 2017.'''.format(len(acc)),
                     style={
-                        'fontFamily' : FONT_FAMILY
+                        'fontFamily' : FONT_FAMILY,
+                        'paddingTop' : 10
                     }),
                 html.Div('''You can explore when and where the accidents happened using these filters.''',),
-                html.Div('''Select the severity of the accident:''',
-                    style={
-                        'paddingTop' : 20,
-                        'paddingBottom' : 10
-                    }),
-                dcc.Checklist(# Checklist for the three different severity values
-                    options=[
-                        {'label': sev + ' [{:,}]'.format(len(list(filter(lambda k: k==sev, acc['Accident_Severity'])))), 'value': sev} for sev in acc['Accident_Severity'].unique()
-                    ],
-                    values=[sev for sev in acc['Accident_Severity'].unique()],
-                    labelStyle={
-                        'display': 'inline-block',
-                        'paddingRight' : 10,
-                        'paddingLeft' : 10,
-                        'paddingBottom' : 5,
-                        },
-                    id="severityChecklist",),
-                html.Div('''Select the day of the accident:''',
+                
+                html.Div([html.Div('''Select the severity of the accident:''',
+                        style={
+                            'paddingTop' : 20,
+                            'paddingBottom' : 10
+                        }),
+                    dcc.Checklist(# Checklist for the three different severity values
+                        options=[
+                            {'label': sev + ' [{:,}]'.format(len(list(filter(lambda k: k == sev, acc['Accident_Severity'])))), 'value': sev} for sev in acc['Accident_Severity'].unique()
+                        ],
+                        values=[sev for sev in acc['Accident_Severity'].unique()],
+                        labelStyle={
+                            'display': 'inline-block',
+                            'paddingRight' : 10,
+                            'paddingLeft' : 10,
+                            'paddingBottom' : 5,
+                            },
+                        id="severityChecklist",)],
+                    style={'width' : '50%', 'float' : 'left'}),
+                html.Div([html.Div('''Select the day of the accident:''',
                     style={
                         'paddingTop' : 20,
                         'paddingBottom' : 10
@@ -85,34 +74,36 @@ app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                 dcc.Checklist(# Checklist for the dats of week, sorted using the sorting dict created
                  # earlier
                     options=[
-                        {'label': day[:3]# + ' [{:,}]'.format(len(list(filter(lambda k: k==day, acc['Day_of_Week']))))
-                         , 'value': day} for day in sorted(acc['Day_of_Week'].unique(), key=lambda k: DAYSORT[k])
-                        #{'label': DAYSORT[day][:3], 'value': day} for day in sorted(DAYSORT)
+                        {'label': day[:3], 'value': day} for day in sorted(acc['Day_of_Week'].unique(), key=lambda k: DAYSORT[k])
                     ],
                     values=[day for day in acc['Day_of_Week'].unique()],
-                    #values=[day for day in DAYSORT],
                     labelStyle={  # Different padding for the checklist elements
                         'display': 'inline-block',
                         'paddingRight' : 10,
                         'paddingLeft' : 10,
                         'paddingBottom' : 5,
                         },
-                    id="dayChecklist",),
+                    id="dayChecklist",)],
+                    style={'width' : '50%', 'float' : 'right',  }),
                 #html.Div('''Select the age group of the accident:''',
                 #    style={
                 #        'paddingTop' : 20,
                 #        'paddingBottom' : 10
                 #    }),
-                #dcc.Checklist(# Checklist for the dats of week, sorted using the sorting dict created
+                #dcc.Checklist(# Checklist for the dats of week, sorted using
+                #the sorting dict created
                  # earlier
                 #   id="ageChecklist",
                 #   options=[
-                #        {'label': AGES[age] , 'value': age} for age in sorted(AGES) if age >= 0
-                #        #{'label': DAYSORT[day][:3], 'value': day} for day in sorted(DAYSORT)
+                #        {'label': AGES[age] , 'value': age} for age in
+                #        sorted(AGES) if age >= 0
+                #        #{'label': DAYSORT[day][:3], 'value': day} for day in
+                #        sorted(DAYSORT)
                 #    ],
                 #    values=[age for age in sorted(AGES) if age >= 0],
                 #    #values=[day for day in DAYSORT],
-                #    labelStyle={  # Different padding for the checklist elements
+                #    labelStyle={ # Different padding for the checklist
+                #    elements
                 #        'display': 'inline-block',
                 #        'paddingRight' : 10,
                 #       'paddingLeft' : 10,
@@ -132,13 +123,77 @@ app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                     step=1,
                     value=[acc['Hour'].min(), acc['Hour'].max()],
                     marks={str(h) : str(h) for h in range(acc['Hour'].min(), acc['Hour'].max() + 1)})],
-                style={
+                    style={
+                        "width" : '100%', 
+                        'display' : 'inline-block', 
+                        'paddingLeft' : 50, 
+                        'paddingRight' : 10,
+                        'paddingBottom' : 50,
+                        'boxSizing' : 'border-box',
+                        }),            
+                html.Div('''Select the month of accident:''',
+                    style={
+                        'paddingTop' : 5,
+                        'paddingBottom' : 10,                        
+                        'paddingLeft' : 50, 
+                    }),
+                dcc.Checklist(# Checklist for the dats of week, sorted using the sorting dict created
+                 # earlier
+                    options=[
+                        {'label': MONTHS[month], 'value': month} for month in       MONTHS
+                    ],
+                    values=[month for month in acc['Month']],
+                    labelStyle={  # Different padding for the checklist elements
+                        'display': 'inline-block',
+                        'paddingRight' : 10,
+                        'paddingLeft' : 10,
+                        'paddingBottom' : 5,
+                        },
+                    id="monthChecklist", 
+                    style={
+                    "width" : '100%', 
+                    'display' : 'inline-block', 
+                    'paddingLeft' : 50, 
+                    'paddingRight' : 10,
+                    'boxSizing' : 'border-box',
+                    }),
+                html.Div('''Select the weather condition of accident:''',
+                    style={
+                        'paddingTop' : 5,
+                        'paddingBottom' : 10,                        
+                        'paddingLeft' : 50, 
+                    }),
+                dcc.Checklist(# Checklist for the dats of week, sorted using the sorting dict created
+                 # earlier
+                    options=[
+                        {'label': WEATHERS[weather], 'value': weather} for weather in       sorted(WEATHERS) if weather >= 0
+                    ],
+                    values=[weather for weather in acc['Weather_Conditions'].unique()],
+                    labelStyle={  # Different padding for the checklist elements
+                        'display': 'inline-block',
+                        'paddingRight' : 10,
+                        'paddingLeft' : 10,
+                        'paddingBottom' : 5,
+                        },
+                    id="weatherChecklist", 
+                    style={
                     "width" : '100%', 
                     'display' : 'inline-block', 
                     'paddingLeft' : 50, 
                     'paddingRight' : 10,
                     'paddingBottom' : 50,
                     'boxSizing' : 'border-box',
+                    }),
+                html.Div([# Holds the map & the widgets
+                    dcc.Graph(id="map") # Holds the map in a div to apply styling to it                 
+                ],
+                style={
+                    "width" : '100%', 
+                    'display' : 'inline-block', 
+                    'paddingRight' : 50, 
+                    'paddingLeft' : 50,
+                    'boxSizing' : 'border-box',
+                    'fontFamily' : FONT_FAMILY
                     }),
                 html.Div([# Holds the heatmap & barchart (60:40 split)
                     html.Div([# Holds the heatmap
@@ -163,8 +218,8 @@ app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                         'paddingLeft' : 5,
                         'boxSizing' : 'border-box'
                         })]),
-                dash_table.DataTable(
-                    id='datatable-interactivity',
+                
+                dash_table.DataTable(id='datatable-interactivity',
                     columns=[{"name": i, "id": i} for i in acc.columns],
                     data=acc.to_dict('records'),
                     editable=True,
@@ -217,6 +272,21 @@ app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                             'fontFamily' : FONT_FAMILY,
                             'fontSize' : 8,
                             'fontStyle' : 'italic'
-                        })])],
+                        })]),
+                html.Div([
+                        dcc.Loading(id="loading-1", children=[html.Div(id="loading-output-1", style={
+                                'display':'block',
+                                'float':'center',
+                                'position':'absolute'
+                            })], type="default", fullscreen=True,
+                            style={
+                                'display':'block',
+                                'float':'center',
+                                'position':'absolute',
+                                'background-color': 'rgba(0, 0, 0, 0.8)'
+                            }),
+                        
+                    ])
+                ],
                 style={'paddingBottom' : 20})
 

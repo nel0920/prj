@@ -17,8 +17,10 @@ from DashAccidents.config import *
 @app.callback(Output(component_id='bar', component_property='figure'),
     [Input(component_id='severityChecklist', component_property='values'),
     Input(component_id='dayChecklist', component_property='values'),
+    Input(component_id='weatherChecklist', component_property='values'),
+    Input(component_id='monthChecklist', component_property='values'),
     Input(component_id='hourSlider', component_property='value'),])
-def updateBarChart(severity, weekdays, time):
+def updateBarChart(severity, weekdays, weathers, months, time):
     # The rangeslider is selects inclusively, but a python list stops before
     # the last number in a range
     hours = [i for i in range(time[0], time[1] + 1)]
@@ -26,7 +28,7 @@ def updateBarChart(severity, weekdays, time):
     # Create a copy of the dataframe by filtering according to the values
     # passed in.
     # Important to create a copy rather than affect the global object.
-    acc2 = DataFrame(acc[['Accident_Severity','Speed_limit','Number_of_Casualties']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))].groupby(['Accident_Severity','Speed_limit']).sum()).reset_index()
+    acc2 = DataFrame(acc[['Accident_Severity','Speed_limit','Number_of_Casualties']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))].groupby(['Accident_Severity','Speed_limit']).sum()).reset_index()
 
     # Create the field for the hovertext.  Doing this after grouping, rather
     # than
@@ -88,13 +90,15 @@ def updateBarChart(severity, weekdays, time):
 @app.callback(Output(component_id='heatmap', component_property='figure'),
     [Input(component_id='severityChecklist', component_property='values'),
     Input(component_id='dayChecklist', component_property='values'),
+    Input(component_id='weatherChecklist', component_property='values'),
+    Input(component_id='monthChecklist', component_property='values'),
     Input(component_id='hourSlider', component_property='value'),])
-def updateHeatmap(severity, weekdays, time):
+def updateHeatmap(severity, weekdays, weathers, months, time):
     # The rangeslider is selects inclusively, but a python list stops before
     # the last number in a range
     hours = [i for i in range(time[0], time[1] + 1)]
     # Take a copy of the dataframe, filtering it and grouping
-    acc2 = DataFrame(acc[['Day_of_Week', 'Hour','Number_of_Casualties']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))].groupby(['Day_of_Week', 'Hour']).sum()).reset_index()
+    acc2 = DataFrame(acc[['Day_of_Week', 'Hour','Number_of_Casualties']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))].groupby(['Day_of_Week', 'Hour']).sum()).reset_index()
 
     # Apply text after grouping
     def heatmapText(row):
@@ -162,12 +166,14 @@ def updateHeatmap(severity, weekdays, time):
 @app.callback(Output(component_id='map', component_property='figure'),
     [Input(component_id='severityChecklist', component_property='values'),
     Input(component_id='dayChecklist', component_property='values'),
+    Input(component_id='weatherChecklist', component_property='values'),
+    Input(component_id='monthChecklist', component_property='values'),
     Input(component_id='hourSlider', component_property='value'),])
-def updateMapBox(severity, weekdays, time):
+def updateMapBox(severity, weekdays, weathers, months, time):
     # List of hours again
     hours = [i for i in range(time[0], time[1] + 1)]
     # Filter the dataframe
-    acc2 = acc[(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))]
+    acc2 = acc[(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]
 
     # Once trace for each severity value
     traces = []
@@ -195,7 +201,7 @@ def updateMapBox(severity, weekdays, time):
             'name' : sev,
             'legendgroup' : sev,
             'showlegend' : False,
-            'text' : acc3['Local_Authority_(District)'] # Text will show location
+            'text' : acc3['Local_Authority_(District)']# + '[lat:' + acc3['Latitude'] +', lng:' +  acc3['Longitude'] + ']' # Text will show location
         })
         
         # Append a separate marker trace to show bigger markers for the legend.
@@ -244,3 +250,35 @@ def updateMapBox(severity, weekdays, time):
     }
     fig = dict(data=traces, layout=layout) 
     return fig
+
+
+
+@app.callback(Output(component_id='datatable-interactivity', component_property='data'),
+    [Input(component_id='severityChecklist', component_property='values'),
+    Input(component_id='dayChecklist', component_property='values'),
+    Input(component_id='weatherChecklist', component_property='values'),
+    Input(component_id='monthChecklist', component_property='values'),
+    Input(component_id='hourSlider', component_property='value'),])
+def updateDataTable(severity, weekdays, weathers, months, time):
+    # The rangeslider is selects inclusively, but a python list stops before
+    # the last number in a range
+    hours = [i for i in range(time[0], time[1] + 1)]
+    
+    # Create a copy of the dataframe by filtering according to the values
+    # passed in.
+    # Important to create a copy rather than affect the global object.
+    acc2 = acc[(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]
+
+    return acc2.to_dict('records')
+
+
+
+    
+@app.callback(Output("loading-output-1", "children"), [Input(component_id='severityChecklist', component_property='values'),
+    Input(component_id='dayChecklist', component_property='values'),
+    Input(component_id='weatherChecklist', component_property='values'),
+    Input(component_id='monthChecklist', component_property='values'),
+    Input(component_id='hourSlider', component_property='value'),])
+def input_triggers_spinner(severity, weekdays, weathers, months, time):
+    time.sleep(1)
+    return 0

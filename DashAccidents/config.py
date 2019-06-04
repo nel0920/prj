@@ -57,10 +57,17 @@ xlsDGLoc = getCsvLoc('DG')
 data_guide_days = read_excel(xlsDGLoc, 'Day of Week')
 data_guide_severitys = read_excel(xlsDGLoc, 'Accident Severity')
 data_guide_ages = read_excel(xlsDGLoc, 'Age Band')
+data_guide_weathers = read_excel(xlsDGLoc, 'Weather')
+data_guide_ladistricts = read_excel(xlsDGLoc, 'Local Authority (District)')
+
 
 SEVERITYS = dict(zip(data_guide_severitys['code'], data_guide_severitys['label']))
 DAYS = dict(zip(data_guide_days['code'], data_guide_days['label']))
 AGES = dict(zip(data_guide_ages['code'], data_guide_ages['label']))
+WEATHERS = dict(zip(data_guide_weathers['code'], data_guide_weathers['label']))
+LADISTRICTS = dict(zip(data_guide_ladistricts['code'], data_guide_ladistricts['label']))
+MONTHS = dict(zip([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],['JAN', 'FEB', 'MAR', 'ARP', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']))
+#print(MONTHS)
 
 DAYSORT = dict(zip(data_guide_days['label'], data_guide_days['code']))
 #DAYSORT_2015 = dict(zip(['Friday', 'Monday', 'Saturday','Sunday', 'Thursday', 'Tuesday', 'Wednesday'], [4, 0, 5, 6, 3, 1, 2]))
@@ -77,8 +84,10 @@ acc = acc[~acc['Speed_limit'].isin([0, 10])]
 # Create an hour column
 acc['Hour'] = acc['Time'].apply(lambda x: int(x[:2]))
 acc['Day_of_Week'] = acc['Day_of_Week'].apply(lambda k: DAYS[k])
-
+acc['Local_Authority_(District)'] = acc['Local_Authority_(District)'].apply(lambda k: LADISTRICTS[k])
+acc['Month'] = acc['Date'].apply(lambda x: int((x[:5])[3:]))
+#print(acc['Month'])
 vec['Age_Band_of_Driver'] = vec['Age_Band_of_Driver'].apply(lambda k: AGES[k])
-
 cas['Age_Band_of_Driver'] = cas['Age_Band_of_Casualty'].apply(lambda k: AGES[k])
+
 #data = read_excel(loc, index_col=0)
