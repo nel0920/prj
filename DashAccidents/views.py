@@ -40,7 +40,7 @@ app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                 #    'width' : '100%',
                 #    'text-align': 'center',
                 #    'fontFamily' : FONT_FAMILY
-                #    }),                
+                #    }),
                 html.Div([html.H3('''The United Kindom suffered {:,} traffic accidents in 2017.'''.format(len(acc)),
                     style={
                         'fontFamily' : FONT_FAMILY,
@@ -185,7 +185,7 @@ app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                     'boxSizing' : 'border-box',
                     }),
                 html.Div([# Holds the map & the widgets
-                    dcc.Graph(id="map") # Holds the map in a div to apply styling to it                 
+                    dcc.Graph(id="map") # Holds the map in a div to apply styling to it
                 ],
                 style={
                     "width" : '100%', 
@@ -218,7 +218,31 @@ app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                         'paddingLeft' : 5,
                         'boxSizing' : 'border-box'
                         })]),
-                
+                html.Div([# Holds the map & the widgets
+                    dcc.Graph(id="line") # Holds the map in a div to apply styling to it
+                ],
+                style={
+                    "width" : '100%', 
+                    'display' : 'inline-block', 
+                    'paddingRight' : 50, 
+                    'paddingLeft' : 50,
+                    'paddingBottom' : 10,
+                    'boxSizing' : 'border-box',
+                    'fontFamily' : FONT_FAMILY
+                    }),
+                html.Div([# Holds the barchart
+                        dcc.Graph(id="bar2",)
+                        #style={'height' : '50%'})
+                    ],
+                    style={
+                        "width" : '100%', 
+                        'display' : 'inline-block', 
+                        'paddingRight' : 50, 
+                        'paddingLeft' : 50,
+                        'paddingBottom' : 50,
+                        'boxSizing' : 'border-box',
+                        'fontFamily' : FONT_FAMILY
+                    }),
                 dash_table.DataTable(id='datatable-interactivity',
                     columns=[{"name": i, "id": i} for i in acc.columns],
                     data=acc.to_dict('records'),
@@ -273,8 +297,7 @@ app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                             'fontSize' : 8,
                             'fontStyle' : 'italic'
                         })]),
-                html.Div([
-                        dcc.Loading(id="loading-1", children=[html.Div(id="loading-output-1", style={
+                html.Div([dcc.Loading(id="loading-1", children=[html.Div(id="loading-output-1", style={
                                 'display':'block',
                                 'float':'center',
                                 'position':'absolute'
@@ -284,9 +307,6 @@ app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
                                 'float':'center',
                                 'position':'absolute',
                                 'background-color': 'rgba(0, 0, 0, 0.8)'
-                            }),
-                        
-                    ])
-                ],
+                            }),])],
                 style={'paddingBottom' : 20})
 

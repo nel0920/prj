@@ -36,7 +36,7 @@ SERIOUS_FRAC = 0.5
 # Set the global font family
 FONT_FAMILY = "PT Sans" 
 
-# Read data, the csv files are in the same location 
+# Read data, the csv files are in the same location
 def getCsvLoc(argument):
     switcher = {
         '2017A': 'DashAccidents/static/data/accidents_2017.csv',
@@ -68,14 +68,14 @@ WEATHERS = dict(zip(data_guide_weathers['code'], data_guide_weathers['label']))
 LADISTRICTS = dict(zip(data_guide_ladistricts['code'], data_guide_ladistricts['label']))
 MONTHS = dict(zip([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],['JAN', 'FEB', 'MAR', 'ARP', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']))
 #print(MONTHS)
-
 DAYSORT = dict(zip(data_guide_days['label'], data_guide_days['code']))
-#DAYSORT_2015 = dict(zip(['Friday', 'Monday', 'Saturday','Sunday', 'Thursday', 'Tuesday', 'Wednesday'], [4, 0, 5, 6, 3, 1, 2]))
-
+#DAYSORT_2015 = dict(zip(['Friday', 'Monday', 'Saturday','Sunday', 'Thursday',
+#'Tuesday', 'Wednesday'], [4, 0, 5, 6, 3, 1, 2]))
 acc = read_csv(csvAccLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
-#cas = read_csv(csvCasLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
-#vec = read_csv(csvVecLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
-
+#cas = read_csv(csvCasLoc, index_col = 0, low_memory = False).dropna(how='any',
+#axis = 0)
+#vec = read_csv(csvVecLoc, index_col = 0, low_memory = False).dropna(how='any',
+#axis = 0)
 acc['Accident_Severity'] = acc['Accident_Severity'].apply(lambda k: SEVERITYS[k])
 # Remove observations where speed limit is 0 or 10.  There's only three and it
 # adds a lot of

@@ -175,6 +175,10 @@ def updateMapBox(severity, weekdays, weathers, months, time):
     # Filter the dataframe
     acc2 = acc[(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]
 
+    #def barText(row):
+    #    return '{} <br> ({}, {})'.format(acc2['Local_Authority_(District)'],acc2['Latitude'], acc2['Longitude'])
+    #acc2['text'] = acc2.apply(barText, axis=1)
+
     # Once trace for each severity value
     traces = []
     for sev in sorted(severity, reverse=True):
@@ -202,6 +206,7 @@ def updateMapBox(severity, weekdays, weathers, months, time):
             'legendgroup' : sev,
             'showlegend' : False,
             'text' : acc3['Local_Authority_(District)']# + '[lat:' + acc3['Latitude'] +', lng:' +  acc3['Longitude'] + ']' # Text will show location
+            #'text' : acc2['text']
         })
         
         # Append a separate marker trace to show bigger markers for the legend.
@@ -270,6 +275,167 @@ def updateDataTable(severity, weekdays, weathers, months, time):
     acc2 = acc[(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]
 
     return acc2.to_dict('records')
+
+@app.callback(Output(component_id='line', component_property='figure'),
+    [Input(component_id='severityChecklist', component_property='values'),
+    Input(component_id='dayChecklist', component_property='values'),
+    Input(component_id='weatherChecklist', component_property='values'),
+    Input(component_id='monthChecklist', component_property='values'),
+    Input(component_id='hourSlider', component_property='value'),])
+def updateLineChart(severity, weekdays, weathers, months, time):
+    # The rangeslider is selects inclusively, but a python list stops before
+    # the last number in a range
+    hours = [i for i in range(time[0], time[1] + 1)]
+    
+
+    # Create a copy of the dataframe by filtering according to the values
+    # passed in.
+    # Important to create a copy rather than affect the global object.
+    acc2 = acc[['Accident_Severity', 'Month']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]    
+    acc2['Total'] = 1
+    
+    # Once trace for each severity value
+    traces = []
+
+    acc3 = acc2[['Accident_Severity','Month', 'Total']].groupby(['Accident_Severity','Month']).sum(axis=0).reset_index()
+
+    def barText(row):
+        return '{} 2017 <br>{:,} {} accidents'.format(MONTHS[row['Month']], row['Total'], row['Accident_Severity'].lower())
+    acc3['text'] = acc3.apply(barText, axis=1)
+
+    for sev in severity:
+      traces.append({
+          'type' : 'line',
+          'y' : acc3['Total'][acc3['Accident_Severity'] == sev],
+          'x' : acc3['Month'][acc3['Accident_Severity'] == sev].apply(lambda k: MONTHS[k]),
+          'text' : acc3['text'][acc3['Accident_Severity'] == sev],
+          'hoverinfo' : 'text',
+          'marker' : {
+              'color' : SEVERITY_LOOKUP[sev], # Use the colur lookup for consistency
+          'line' : {'width' : 3,
+                    'color' : '#333'}},
+          'name' : sev,
+      })  
+
+
+    fig = {
+      'data' : traces, 
+      'layout' : {
+        'paper_bgcolor' : 'rgb(26,25,25)',
+        'plot_bgcolor' : 'rgb(26,25,25)',
+        'font' : {
+            'color' : 'rgb(250,250,250'
+        },
+        'height' : 500,
+        'title' : 'Accidents by month',
+        'margin' : { # Set margins to allow maximum space for the chart
+            'b' : 25,
+            'l' : 30,
+            't' : 70,
+            'r' : 0
+        },
+        'legend' : { # Horizontal legens, positioned at the bottom to allow maximum space for the
+                     # chart
+            'orientation' : 'h',
+            'x' : 0,
+            'y' : 1.01,
+            'yanchor' : 'bottom',
+            },
+        'xaxis' : {
+            'tickvals' : sorted(acc3['Month'].apply(lambda k: MONTHS[k])), # Force the tickvals & ticktext just in case
+            'ticktext' : sorted(acc3['Month'].apply(lambda k: MONTHS[k])),
+            'tickmode' : 'array'
+        }
+      }
+    }
+
+
+    #print(result)
+    #for sev in sorted(severity, reverse=True):
+        #print(acc3['Accident_Severity'][acc3['Accident_Severity'].isin(sev)].sum())
+            
+        
+
+    
+    return fig
+
+@app.callback(Output(component_id='bar2', component_property='figure'),
+    [Input(component_id='severityChecklist', component_property='values'),
+    Input(component_id='dayChecklist', component_property='values'),
+    Input(component_id='weatherChecklist', component_property='values'),
+    Input(component_id='monthChecklist', component_property='values'),
+    Input(component_id='hourSlider', component_property='value'),])
+def updateBarChart2(severity, weekdays, weathers, months, time):
+    # The rangeslider is selects inclusively, but a python list stops before
+    # the last number in a range
+    hours = [i for i in range(time[0], time[1] + 1)]
+    
+   # Create a copy of the dataframe by filtering according to the values
+    # passed in.
+    # Important to create a copy rather than affect the global object.
+    acc2 = acc[['Accident_Severity', 'Weather_Conditions']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]    
+    acc2['Total'] = 1
+    
+    # Once trace for each severity value
+    traces = []
+    
+    acc3 = acc2[['Accident_Severity','Weather_Conditions', 'Total']][acc['Weather_Conditions'].isin(range(1,7))].groupby(['Accident_Severity','Weather_Conditions']).sum(axis=0).reset_index()
+    #print(acc3)
+    def barText(row):
+        return 'Over {:,} {} accidents happened in {} .'.format(row['Total'], row['Accident_Severity'].lower(), WEATHERS[row['Weather_Conditions']])
+    acc3['text'] = acc3.apply(barText, axis=1)
+
+    for sev in severity:
+      traces.append({
+          'type' : 'bar',
+          'y' : acc3['Total'][acc3['Accident_Severity'] == sev],
+          'x' : acc3['Weather_Conditions'][acc3['Accident_Severity'] == sev].apply(lambda k: WEATHERS[k]),
+          #'text' : acc3['text'][acc3['Accident_Severity'] == sev],
+          #'hoverinfo' : 'text',
+          'marker' : {
+              'color' : SEVERITY_LOOKUP[sev], # Use the colur lookup for consistency
+          'line' : {'width' : 3,
+                    'color' : '#333'}},
+          'name' : sev,
+      })  
+
+   
+    fig = {'data' : traces,
+          'layout' : {
+              'paper_bgcolor' : 'rgb(26,25,25)',
+              'plot_bgcolor' : 'rgb(26,25,25)',
+              'font' : {
+                  'color' : 'rgb(250,250,250'
+              },
+              'height' : 500,
+              'title' : 'Accidents by weather',
+              'margin' : { # Set margins to allow maximum space for the chart
+                  'b' : 25,
+                  'l' : 30,
+                  't' : 70,
+                  'r' : 0
+              },
+              'legend' : { # Horizontal legens, positioned at the bottom to allow maximum space for the
+                           # chart
+                  'orientation' : 'b',
+                  'x' : 0,
+                  'y' : 1.01,
+                  'yanchor' : 'bottom',
+                  },
+            'xaxis' : {
+                'tickvals' : sorted(acc3['Weather_Conditions'].apply(lambda k: WEATHERS[k])), # Force the tickvals & ticktext just in case
+                'ticktext' : sorted(acc3['Weather_Conditions'].apply(lambda k: WEATHERS[k])),
+                'tickmode' : 'array',
+                'tickangle' : 4,
+                'fonts':{
+                  'size':8
+                }
+            }
+          }}
+    
+    # Returns the figure into the 'figure' component property, update the bar
+    # chart
+    return fig
 
 
 
