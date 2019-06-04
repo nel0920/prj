@@ -1,5 +1,7 @@
+# Import the libraries
 import dash
 from dash.dependencies import Input, Output, State
+
 from DashAccidents import server, app 
 from DashAccidents.config import *
 

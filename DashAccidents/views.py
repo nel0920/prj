@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
+# Import the libraries
 import sys
 import os
 import traceback
 import json
-from jinja2 import TemplateNotFound
-
-from random import randint
 
 import dash
 import dash_table
@@ -16,8 +14,6 @@ import dash_bootstrap_components as dbc
 
 from dash.dependencies import Input, Output, State
 
-from pandas import read_csv, read_excel, DataFrame
-
 from flask import Flask, render_template
 from flask_googlemaps import GoogleMaps
 from flask_googlemaps import Map, icons
@@ -25,40 +21,26 @@ from flask_googlemaps import Map, icons
 from DashAccidents.config import *
 from DashAccidents.utils import *
 
+from pandas import read_csv, read_excel, DataFrame
+from jinja2 import TemplateNotFound
+from random import randint
 
 
-# matching route and handler
-
-
-#server = Flask(__name__)
-#server.secret_key = os.environ.get('secret_key', 'secret')
-#app = dash.Dash(__name__, server=server,  static_external_path='http://localhost:5000/static/')
-#app.config.supress_callback_exceptions = True
-#app.config['GOOGLEMAPS_KEY'] = GOOGLEMAP
-#app.config.from_object(DevelopmentConfig)
-#GoogleMaps(server)
-
+## SETTING UP THE APP LAYOUT ##
 # Include the external CSS
-cssUrl = ["https://rawgit.com/richard-muir/uk-car-accidents/master/road-safety.css", "https://use.fontawesome.com/releases/v5.8.2/css/all.css"]#, "https://codepen.io/chriddyp/pen/brPBPO.css"]
-#cssURL = 'DashAccidents/static/css/main.css'
+cssUrl = ["https://rawgit.com/richard-muir/uk-car-accidents/master/road-safety.css",
+          "https://use.fontawesome.com/releases/v5.8.2/css/all.css"]
 app.css.append_css({
     "external_url": cssUrl
 })
 
-## SETTING UP THE APP LAYOUT ##
-
 # Main layout container
-#app.layout = html.Div([#Tab controller
-#    html.Div([dcc.Tabs(id="tabs", value='tab_uk', children=[dcc.Tab(label='UK', value='tab_uk'),
-#            dcc.Tab(label='HK', value='tab_hk'),]),
- #       html.Div(id = 'tabs_content')])])
-
-app.layout = html.Div([html.H1('Traffic Accidents in the UK',
-                style={
-                    'width' : '100%', 
-                    'text-align': 'center',
-                    'fontFamily' : FONT_FAMILY
-                    }),            
+app.layout = html.Div([#html.H1('Traffic Accidents in the UK',
+                #style={
+                #    'width' : '100%', 
+                #    'text-align': 'center',
+                #    'fontFamily' : FONT_FAMILY
+                #    }),            
                 html.Div([# Holds the map & the widgets
 
                     dcc.Graph(id="map") # Holds the map in a div to apply styling to it
@@ -67,12 +49,13 @@ app.layout = html.Div([html.H1('Traffic Accidents in the UK',
                 style={
                     "width" : '100%', 
                     'display' : 'inline-block', 
+                    'paddingTop' : 20,
                     'paddingRight' : 50, 
                     'paddingLeft' : 50,
                     'boxSizing' : 'border-box',
                     'fontFamily' : FONT_FAMILY
                     }),
-                html.Div([html.H3('''In 2017, the UK suffered {:,} traffic accidents, many of them fatal.'''.format(len(acc)),
+                html.Div([html.H3('''The United Kindom suffered {:,} traffic accidents in 2017.'''.format(len(acc)),
                     style={
                         'fontFamily' : FONT_FAMILY
                     }),
@@ -115,27 +98,27 @@ app.layout = html.Div([html.H1('Traffic Accidents in the UK',
                         'paddingBottom' : 5,
                         },
                     id="dayChecklist",),
-                html.Div('''Select the age group of the accident:''',
-                    style={
-                        'paddingTop' : 20,
-                        'paddingBottom' : 10
-                    }),
-                dcc.Checklist(# Checklist for the dats of week, sorted using the sorting dict created
+                #html.Div('''Select the age group of the accident:''',
+                #    style={
+                #        'paddingTop' : 20,
+                #        'paddingBottom' : 10
+                #    }),
+                #dcc.Checklist(# Checklist for the dats of week, sorted using the sorting dict created
                  # earlier
-                   id="ageChecklist",
-                   options=[
-                        {'label': AGES[age] , 'value': age} for age in sorted(AGES) if age >= 0
-                        #{'label': DAYSORT[day][:3], 'value': day} for day in sorted(DAYSORT)
-                    ],
-                    values=[age for age in sorted(AGES) if age >= 0],
-                    #values=[day for day in DAYSORT],
-                    labelStyle={  # Different padding for the checklist elements
-                        'display': 'inline-block',
-                        'paddingRight' : 10,
-                        'paddingLeft' : 10,
-                        'paddingBottom' : 5,
-                        },
-                    ),
+                #   id="ageChecklist",
+                #   options=[
+                #        {'label': AGES[age] , 'value': age} for age in sorted(AGES) if age >= 0
+                #        #{'label': DAYSORT[day][:3], 'value': day} for day in sorted(DAYSORT)
+                #    ],
+                #    values=[age for age in sorted(AGES) if age >= 0],
+                #    #values=[day for day in DAYSORT],
+                #    labelStyle={  # Different padding for the checklist elements
+                #        'display': 'inline-block',
+                #        'paddingRight' : 10,
+                #       'paddingLeft' : 10,
+                #        'paddingBottom' : 5,
+                #        },
+                #    ),
                 html.Div('''Select the hours in which the accident occurred (24h clock):''',
                     style={
                         'paddingTop' : 20,
@@ -154,6 +137,7 @@ app.layout = html.Div([html.H1('Traffic Accidents in the UK',
                     'display' : 'inline-block', 
                     'paddingLeft' : 50, 
                     'paddingRight' : 10,
+                    'paddingBottom' : 50,
                     'boxSizing' : 'border-box',
                     }),
                 html.Div([# Holds the heatmap & barchart (60:40 split)
@@ -198,7 +182,8 @@ app.layout = html.Div([html.H1('Traffic Accidents in the UK',
                         },
                         navigation="page",
                     css={
-                        'width' : '100%', 
+                        'width' : '100%',
+                        'paddingTop' : 20, 
                         'paddingRight' : 50, 
                         'paddingLeft' : 50,
                         'display' : 'inline-block',
@@ -232,29 +217,6 @@ app.layout = html.Div([html.H1('Traffic Accidents in the UK',
                             'fontFamily' : FONT_FAMILY,
                             'fontSize' : 8,
                             'fontStyle' : 'italic'
-                        })]),
-                dcc.Dropdown(
-                    id='dropdown',
-                    options=[{'label': i, 'value': i} for i in ['a', 'b', 'c']]
-                ),
-                html.Div(id='loading')],
+                        })])],
                 style={'paddingBottom' : 20})
 
-#@app.callback(Output('tabs_content', 'children'),[Input('tabs', 'value')])
-#def render_tab_content(tab):
-# Holds the widgets & Descriptions
- #   if tab == 'tab_uk':   
-#        return []
-#    elif tab == 'tab_hk':
-#        return []
-
-@app.callback(Output('loading', 'children'), [Input('dropdown', 'value')])
-def update_value(value):
-    time.sleep(2)
-    return 'You have computed {}'.format(value)
-
-# Dash CSS
-#app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
-
-# Loading screen CSS
-app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/brPBPO.css"})
