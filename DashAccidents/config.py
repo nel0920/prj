@@ -73,8 +73,8 @@ DAYSORT = dict(zip(data_guide_days['label'], data_guide_days['code']))
 #DAYSORT_2015 = dict(zip(['Friday', 'Monday', 'Saturday','Sunday', 'Thursday', 'Tuesday', 'Wednesday'], [4, 0, 5, 6, 3, 1, 2]))
 
 acc = read_csv(csvAccLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
-cas = read_csv(csvCasLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
-vec = read_csv(csvVecLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
+#cas = read_csv(csvCasLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
+#vec = read_csv(csvVecLoc, index_col = 0, low_memory = False).dropna(how='any', axis = 0)
 
 acc['Accident_Severity'] = acc['Accident_Severity'].apply(lambda k: SEVERITYS[k])
 # Remove observations where speed limit is 0 or 10.  There's only three and it
@@ -87,7 +87,7 @@ acc['Day_of_Week'] = acc['Day_of_Week'].apply(lambda k: DAYS[k])
 acc['Local_Authority_(District)'] = acc['Local_Authority_(District)'].apply(lambda k: LADISTRICTS[k])
 acc['Month'] = acc['Date'].apply(lambda x: int((x[:5])[3:]))
 #print(acc['Month'])
-vec['Age_Band_of_Driver'] = vec['Age_Band_of_Driver'].apply(lambda k: AGES[k])
-cas['Age_Band_of_Driver'] = cas['Age_Band_of_Casualty'].apply(lambda k: AGES[k])
+#vec['Age_Band_of_Driver'] = vec['Age_Band_of_Driver'].apply(lambda k: AGES[k])
+#cas['Age_Band_of_Driver'] = cas['Age_Band_of_Casualty'].apply(lambda k: AGES[k])
 
 #data = read_excel(loc, index_col=0)
