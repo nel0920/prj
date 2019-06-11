@@ -1,152 +1,129 @@
-# Import the libraries
+# To import the libraries
 import dash
 from dash.dependencies import Input, Output, State
-
 from DashAccidents import server, app 
 from DashAccidents.config import *
 
-
-
-## APP INTERACTIVITY THROUGH CALLBACK FUNCTIONS TO UPDATE THE CHARTS ##
-
-# Callback function passes the current value of all three filters into the
-# update functions.
-# This on updates the bar.
-
-
-@app.callback(Output(component_id='bar', component_property='figure'),
+##### To define the callback method for the components on the web app
+@app.callback(
+    # To define the target object for the updates
+    Output(component_id='barchart', component_property='figure'),
+    # To define the target object that could affect the updates
     [Input(component_id='severityChecklist', component_property='values'),
     Input(component_id='dayChecklist', component_property='values'),
     Input(component_id='weatherChecklist', component_property='values'),
     Input(component_id='monthChecklist', component_property='values'),
     Input(component_id='hourSlider', component_property='value'),])
-def updateBarChart(severity, weekdays, weathers, months, time):
-    # The rangeslider is selects inclusively, but a python list stops before
-    # the last number in a range
-    hours = [i for i in range(time[0], time[1] + 1)]
-    
-    # Create a copy of the dataframe by filtering according to the values
-    # passed in.
-    # Important to create a copy rather than affect the global object.
-    acc2 = DataFrame(acc[['Accident_Severity','Speed_limit','Number_of_Casualties']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))].groupby(['Accident_Severity','Speed_limit']).sum()).reset_index()
+# The method for updating the barchart
+def updateBarChart(severities, weekdays, weathers, months, time):
+    # To define the dataset for flitering the data set fomr controls and remove unused data fields
+    accTemp = DataFrame(acc[['Accident_Severity','Speed_limit','Number_of_Casualties']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))].groupby(['Accident_Severity','Speed_limit']).sum()).reset_index()
 
-    # Create the field for the hovertext.  Doing this after grouping, rather
-    # than
-    #  immediately after loading the df.  Should be quicker this way.
-    def barText(row):
-        return 'Speed Limit: {}mph<br>{:,} {} accidents'.format(row['Speed_limit'], row['Number_of_Casualties'], row['Accident_Severity'].lower())
-    acc2['text'] = acc2.apply(barText, axis=1)
-
-    # One trace for each accidents severity
+    # The method for processing the text when user hovering to the target
+    def text(row):
+        return 'In speed limit of {} mph<br>{:,}, it has {} accidents'.format(row['Speed_limit'], row['Number_of_Casualties'], row['Accident_Severity'].lower())
+    # To apply the set of text into dataset
+    accTemp['text'] = accTemp.apply(text, axis=1)
+    # To create the empty traces object for storing the processed data
     traces = []
-    for sev in severity:
+
+    for severity in severities:
         traces.append({
-            'type' : 'bar',
-            'y' : acc2['Number_of_Casualties'][acc2['Accident_Severity'] == sev],
-            'x' : acc2['Speed_limit'][acc2['Accident_Severity'] == sev],
-            'text' : acc2['text'][acc2['Accident_Severity'] == sev],
+            'type' : 'bar', # To define the type of the chart
+            'y' : accTemp['Number_of_Casualties'][accTemp['Accident_Severity'] == severity],
+            'x' : accTemp['Speed_limit'][accTemp['Accident_Severity'] == severity],
+            'text' : accTemp['text'][accTemp['Accident_Severity'] == severity],
             'hoverinfo' : 'text',
             'marker' : {
-                'color' : SEVERITY_LOOKUP[sev], # Use the colur lookup for consistency
+                'color' : SEVERITY_LOOKUP[severity], 
             'line' : {'width' : 2,
                       'color' : '#333'}},
-            'name' : sev,
+            'name' : severity,
         })  
-        
+    # To define all reuired fields for the barchart
     fig = {'data' : traces,
           'layout' : {
-              'paper_bgcolor' : 'rgb(26,25,25)',
-              'plot_bgcolor' : 'rgb(26,25,25)',
+              'paper_bgcolor' : BACKGROUND_COLOUR ,
+              'plot_bgcolor' : BACKGROUND_COLOUR ,
               'font' : {
-                  'color' : 'rgb(250,250,250'
+                  'color' : COLOUR 
               },
-              'height' : 300,
+              'height' : HEIGHT_OF_COMPONENT - 200,
               'title' : 'Accidents by speed limit',
-              'margin' : { # Set margins to allow maximum space for the chart
+              'margin' : { 
                   'b' : 25,
                   'l' : 30,
                   't' : 70,
                   'r' : 0
               },
-              'legend' : { # Horizontal legens, positioned at the bottom to allow maximum space for the
-                           # chart
+              'legend' : { 
                   'orientation' : 'h',
                   'x' : 0,
                   'y' : 1.01,
                   'yanchor' : 'bottom',
                   },
+            # To enforce the tickvals & ticktext to show in graph
             'xaxis' : {
-                'tickvals' : sorted(acc2['Speed_limit'].unique()), # Force the tickvals & ticktext just in case
-                'ticktext' : sorted(acc2['Speed_limit'].unique()),
+                'tickvals' : sorted(accTemp['Speed_limit'].unique()), 
+                'ticktext' : sorted(accTemp['Speed_limit'].unique()),
                 'tickmode' : 'array'
             }
           }}
-    
-    # Returns the figure into the 'figure' component property, update the bar
-    # chart
     return fig
 
-# Pass in the values of the filters to the heatmap
-@app.callback(Output(component_id='heatmap', component_property='figure'),
+@app.callback(
+    # To define the target object for the updates
+    Output(component_id='heatmap', component_property='figure'),
+    # To define the target object that could affect the updates
     [Input(component_id='severityChecklist', component_property='values'),
     Input(component_id='dayChecklist', component_property='values'),
     Input(component_id='weatherChecklist', component_property='values'),
     Input(component_id='monthChecklist', component_property='values'),
     Input(component_id='hourSlider', component_property='value'),])
-def updateHeatmap(severity, weekdays, weathers, months, time):
-    # The rangeslider is selects inclusively, but a python list stops before
-    # the last number in a range
-    hours = [i for i in range(time[0], time[1] + 1)]
-    # Take a copy of the dataframe, filtering it and grouping
-    acc2 = DataFrame(acc[['Day_of_Week', 'Hour','Number_of_Casualties']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))].groupby(['Day_of_Week', 'Hour']).sum()).reset_index()
+# The method for updating the heatmap
+def updateHeatmap(severities, weekdays, weathers, months, time):
+    # To transfer the hours from time object
+    hours = [hour for hour in range(time[0], time[1] + 1)]
+    # To define the dataset for flitering the data set fomr controls and remove unused data fields
+    accTemp = DataFrame(acc[['Day_of_Week', 'Hour','Number_of_Casualties']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours)) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))].groupby(['Day_of_Week', 'Hour']).sum()).reset_index()
 
-    # Apply text after grouping
-    def heatmapText(row):
-        return 'Day : {}<br>Time : {:02d}:00<br>Number of casualties: {}'.format(row['Day_of_Week'],row['Hour'], row['Number_of_Casualties'])
-    acc2['text'] = acc2.apply(heatmapText, axis=1)
-    
-    # Pre-sort a list of days to feed into the heatmap
-    days = sorted(acc2['Day_of_Week'].unique(), key=lambda k: DAYSORT[k])
+    # The method for processing the text when user hovering to the target
+    def text(row):
+        return 'Time : {:02d}:00<br>Day : {}<br>Number of casualties: {}'.format(row['Hour'], row['Day_of_Week'], row['Number_of_Casualties'])
+    # To apply the set of text into dataset
+    accTemp['text'] = accTemp.apply(text, axis=1)
 
-    # Create the z-values and text in a nested list format to match the shape
-    # of the heatmap
+    # To define the sorted days and empty object for the next step of processes
+    days = sorted(accTemp['Day_of_Week'].unique(), key=lambda k: DAY[k])
     z = []
     text = []
-    for d in days:
-        row = acc2['Number_of_Casualties'][acc2['Day_of_Week'] == d].values.tolist()
-        t = acc2['text'][acc2['Day_of_Week'] == d].values.tolist()
+
+    # To process data into required format
+    for day in days:
+        row = accTemp['Number_of_Casualties'][accTemp['Day_of_Week'] == day].values.tolist()
+        temp = accTemp['text'][accTemp['Day_of_Week'] == day].values.tolist()
         z.append(row)
-        text.append(t)
-
-    # Plotly standard 'Electric' colourscale is great, but the maximum value is
-    # white, as is the
-    #  colour for missing values.  I set the maximum to the penultimate maximum
-    #  value,
-    #  then spread out the other.  Plotly colourscales here:
-    #  https://github.com/plotly/plotly.py/blob/master/plotly/colors.py
-
-    Electric = [[0, 'rgb(0,0,0)'], [0.25, 'rgb(30,0,100)'],
-        [0.55, 'rgb(120,0,100)'], [0.8, 'rgb(160,90,0)'],
-        [1, 'rgb(230,200,0)']]
+        text.append(temp)
     
-    # Heatmap trace
+    # To define the processed data into traces object
     traces = [{
-        'type' : 'heatmap',
+        'type' : 'heatmap',# To define the type of chart
         'x' : hours,
         'y' : days,
         'z' : z,
         'text' : text,
         'hoverinfo' : 'text',
-        'colorscale' : Electric,
+        'colorscale' : [[0, 'rgb(0, 0, 0)'], [0.25, 'rgb(30, 0, 100)'], [0.55, 'rgb(120, 0, 100)'], [0.8, 'rgb(160, 90, 0)'], [1, 'rgb(230, 200, 0)']],
     }]
-        
-    fig = {'data' : traces,
+    
+    # To define all reuired fields for the heatmap
+    fig = {'data' : traces, # To deine data right here
           'layout' : {
-              'paper_bgcolor' : 'rgb(26,25,25)',
+              'paper_bgcolor' : BACKGROUND_COLOUR ,
               'font' : {
-                  'color' : 'rgb(250,250,250'
+                  'color' : COLOUR
               },
-              'height' : 300,
+              'height' : HEIGHT_OF_COMPONENT - 200,
               'title' : 'Accidents by time and day',
               'margin' : {
                   'b' : 50,
@@ -154,297 +131,281 @@ def updateHeatmap(severity, weekdays, weathers, months, time):
                   't' : 50,
                   'r' : 0,
               },
+              # To enforce the tickvals & ticktext to show in graph
               'xaxis' : {
-                  'ticktext' : hours, # for the tickvals and ticktext with one for each hour
+                  'ticktext' : hours, 
                   'tickvals' : hours,
                   'tickmode' : 'array', 
               }
           }}
     return fig
 
-# Feeds the filter outputs into the mapbox
-@app.callback(Output(component_id='map', component_property='figure'),
+@app.callback(
+    # To define the target object for the updates
+    Output(component_id='map', component_property='figure'),
+    # To define the target object that could affect the updates
     [Input(component_id='severityChecklist', component_property='values'),
     Input(component_id='dayChecklist', component_property='values'),
     Input(component_id='weatherChecklist', component_property='values'),
     Input(component_id='monthChecklist', component_property='values'),
     Input(component_id='hourSlider', component_property='value'),])
-def updateMapBox(severity, weekdays, weathers, months, time):
-    # List of hours again
-    hours = [i for i in range(time[0], time[1] + 1)]
-    # Filter the dataframe
-    acc2 = acc[(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]
+# The method for updating the barchart
+def updateMapBox(severities, weekdays, weathers, months, time):     
+    # To define the dataset for flitering the data set fomr controls and remove unused data fields
+    accTemp = acc[(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]
 
-    #def barText(row):
-    #    return '{} <br> ({}, {})'.format(acc2['Local_Authority_(District)'],acc2['Latitude'], acc2['Longitude'])
-    #acc2['text'] = acc2.apply(barText, axis=1)
-
-    # Once trace for each severity value
+    #def text(row):
+    #    return '{} <br> ({},
+    #    {})'.format(accTemp['Local_Authority_(District)'],accTemp['Latitude'],
+    #    accTemp['Longitude'])
+    #accTemp['text'] = accTemp.apply(text, axis=1)
+    # To create the empty traces object for storing the processed data
     traces = []
-    for sev in sorted(severity, reverse=True):
-        # Set the downsample fraction depending on the severity
+
+    for severity in sorted(severities, reverse=True):
         sample = 1
-        if sev == 'Slight':
+
+        if severity == 'Slight':
             sample = SLIGHT_FRAC
-        elif sev == 'Serious':
+        elif severity == 'Serious':
             sample = SERIOUS_FRAC
-        # Downsample the dataframe and filter to the current value of severity
-        acc3 = acc2[acc2['Accident_Severity'] == sev].sample(frac=sample)
-            
-        # Scattermapbox trace for each severity
+
+        accTemp_ = accTemp[accTemp['Accident_Severity'] == severity].sample(frac=sample)
+        
         traces.append({
-            'type' : 'scattermapbox',
+            'type' : 'scattermapbox',# To define the type of map
             'mode' : 'markers',
-            'lat' : acc3['Latitude'],
-            'lon' : acc3['Longitude'],
+            'lat' : accTemp_['Latitude'],
+            'lon' : accTemp_['Longitude'],
             'marker' : {
-                'color' : SEVERITY_LOOKUP[sev], # Keep the colour consistent
+                'color' : SEVERITY_LOOKUP[severity], 
                 'size' : 2,
             },
             'hoverinfo' : 'text',
-            'name' : sev,
-            'legendgroup' : sev,
+            'name' : severity,
+            'legendgroup' : severity,
             'showlegend' : False,
-            'text' : acc3['Local_Authority_(District)']# + '[lat:' + acc3['Latitude'] +', lng:' +  acc3['Longitude'] + ']' # Text will show location
-            #'text' : acc2['text']
+            'text' : accTemp_['Local_Authority_(District)']# + '[lat:' + accTemp_['Latitude'] +', lng:' + accTemp_['Longitude'] + ']' # Text will
+                                                       # show location
+            #'text' : accTemp['text']
         })
-        
-        # Append a separate marker trace to show bigger markers for the legend.
-        #  The ones we're plotting on the map are too small to be of use in the
-        #  legend.
         traces.append({
             'type' : 'scattermapbox',
             'mode' : 'markers',
             'lat' : [0],
             'lon' : [0],
             'marker' : {
-                'color' : SEVERITY_LOOKUP[sev],
-                'size' : 10,
+                'color' : SEVERITY_LOOKUP[severity],
+                'size' : FONT_SIZE,
             },
-            'name' : sev,
-            'legendgroup' : sev,
+            'name' : severity,
+            'legendgroup' : severity,
             
         })
+
     layout = {
-        'height' : 500,
-        'paper_bgcolor' : 'rgb(26,25,25)',
+        'height' : HEIGHT_OF_COMPONENT,
+        'paper_bgcolor' : BACKGROUND_COLOUR ,
               'font' : {
-                  'color' : 'rgb(250,250,250'
-              }, # Set this to match the colour of the sea in the mapbox colourscheme
+                  'color' : COLOUR
+              }, 
         'autosize' : True,
         'hovermode' : 'closest',
         'mapbox' : {
             'accesstoken' : MAPBOX,
-            'center' : {  # Set the geographic centre - trial and error, birmingham
-                'lat' : 52.489,
-                'lon' : -1.898
+            'center' : {  
+                'lat' : CENTER_LAT,
+                'lon' : CENTER_LON
             },
-            'zoom' : 5.2,
-            'style' : 'dark',   # Dark theme will make the colours stand out
+            'zoom' : ZOOM,
+            'style' : 'dark',   
         },
         'margin' : {'t' : 0,
                    'b' : 0,
                    'l' : 0,
                    'r' : 0},
         'legend' : {
-            'font' : {'color' : 'white'},
+            'font' : {'color' : COLOUR},
              'orientation' : 'h',
              'x' : 0,
              'y' : 1.01
         }
     }
+
     fig = dict(data=traces, layout=layout) 
+
     return fig
 
-
-
-@app.callback(Output(component_id='datatable-interactivity', component_property='data'),
+@app.callback(
+    # To define the target object for the updates
+    Output(component_id='linechart', component_property='figure'),
+    # To define the target object that could affect the updates
     [Input(component_id='severityChecklist', component_property='values'),
     Input(component_id='dayChecklist', component_property='values'),
     Input(component_id='weatherChecklist', component_property='values'),
     Input(component_id='monthChecklist', component_property='values'),
     Input(component_id='hourSlider', component_property='value'),])
-def updateDataTable(severity, weekdays, weathers, months, time):
-    # The rangeslider is selects inclusively, but a python list stops before
-    # the last number in a range
-    hours = [i for i in range(time[0], time[1] + 1)]
-    
-    # Create a copy of the dataframe by filtering according to the values
-    # passed in.
-    # Important to create a copy rather than affect the global object.
-    acc2 = acc[(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]
-
-    return acc2.to_dict('records')
-
-@app.callback(Output(component_id='line', component_property='figure'),
-    [Input(component_id='severityChecklist', component_property='values'),
-    Input(component_id='dayChecklist', component_property='values'),
-    Input(component_id='weatherChecklist', component_property='values'),
-    Input(component_id='monthChecklist', component_property='values'),
-    Input(component_id='hourSlider', component_property='value'),])
-def updateLineChart(severity, weekdays, weathers, months, time):
-    # The rangeslider is selects inclusively, but a python list stops before
-    # the last number in a range
-    hours = [i for i in range(time[0], time[1] + 1)]
-    
-
-    # Create a copy of the dataframe by filtering according to the values
-    # passed in.
-    # Important to create a copy rather than affect the global object.
-    acc2 = acc[['Accident_Severity', 'Month']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]    
-    acc2['Total'] = 1
-    
-    # Once trace for each severity value
+# The method for updating the linechart
+def updateLineChart(severities, weekdays, weathers, months, time):
+    # To define the dataset for flitering the data set fomr controls and remove unused data fields    
+    accTemp = acc[['Accident_Severity', 'Month']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))] 
+    # To add the data into dataset   
+    accTemp['Total'] = 1
+    # To create the empty traces object for storing the processed data
     traces = []
-
-    acc3 = acc2[['Accident_Severity','Month', 'Total']].groupby(['Accident_Severity','Month']).sum(axis=0).reset_index()
-
-    def barText(row):
+    # To filter unused data & get only required data field
+    accTemp_ = accTemp[['Accident_Severity','Month', 'Total']].groupby(['Accident_Severity','Month']).sum(axis=0).reset_index()
+    # The method for processing the text when user hovering to the target
+    
+    def text(row):
         return '{} 2017 <br>{:,} {} accidents'.format(MONTHS[row['Month']], row['Total'], row['Accident_Severity'].lower())
-    acc3['text'] = acc3.apply(barText, axis=1)
+    # To apply the set of text into dataset
+    accTemp_['text'] = accTemp_.apply(text, axis=1)
 
-    for sev in severity:
+    for severity in severities:
       traces.append({
-          'type' : 'line',
-          'y' : acc3['Total'][acc3['Accident_Severity'] == sev],
-          'x' : acc3['Month'][acc3['Accident_Severity'] == sev].apply(lambda k: MONTHS[k]),
-          'text' : acc3['text'][acc3['Accident_Severity'] == sev],
+          'type' : 'line',# To define the type of the chart
+          'y' : accTemp_['Total'][accTemp_['Accident_Severity'] == severity],
+          'x' : accTemp_['Month'][accTemp_['Accident_Severity'] == severity].apply(lambda k: MONTHS[k]),
+          'text' : accTemp_['text'][accTemp_['Accident_Severity'] == severity],
           'hoverinfo' : 'text',
           'marker' : {
-              'color' : SEVERITY_LOOKUP[sev], # Use the colur lookup for consistency
+              'color' : SEVERITY_LOOKUP[severity], 
           'line' : {'width' : 3,
                     'color' : '#333'}},
-          'name' : sev,
+          'name' : severity,
       })  
 
-
+    # To define all reuired fields for the barchart2
     fig = {
       'data' : traces, 
       'layout' : {
-        'paper_bgcolor' : 'rgb(26,25,25)',
-        'plot_bgcolor' : 'rgb(26,25,25)',
+        'paper_bgcolor' : BACKGROUND_COLOUR ,
+        'plot_bgcolor' : BACKGROUND_COLOUR ,
         'font' : {
-            'color' : 'rgb(250,250,250'
+            'color' : COLOUR
         },
         'height' : 500,
         'title' : 'Accidents by month',
-        'margin' : { # Set margins to allow maximum space for the chart
+        'margin' : {
             'b' : 25,
             'l' : 30,
             't' : 70,
             'r' : 0
         },
-        'legend' : { # Horizontal legens, positioned at the bottom to allow maximum space for the
-                     # chart
+        'legend' : {
             'orientation' : 'h',
             'x' : 0,
             'y' : 1.01,
             'yanchor' : 'bottom',
             },
+        # To enforce the tickvals & ticktext to show in graph
         'xaxis' : {
-            'tickvals' : sorted(acc3['Month'].apply(lambda k: MONTHS[k])), # Force the tickvals & ticktext just in case
-            'ticktext' : sorted(acc3['Month'].apply(lambda k: MONTHS[k])),
+            'tickvals' : sorted(accTemp_['Month'].apply(lambda k: MONTHS[k])),
+            'ticktext' : sorted(accTemp_['Month'].apply(lambda k: MONTHS[k])),
             'tickmode' : 'array'
         }
       }
     }
-
-
-    #print(result)
-    #for sev in sorted(severity, reverse=True):
-        #print(acc3['Accident_Severity'][acc3['Accident_Severity'].isin(sev)].sum())
-            
-        
-
-    
     return fig
 
-@app.callback(Output(component_id='bar2', component_property='figure'),
+@app.callback(
+    # To define the target object for the updates
+    Output(component_id='barchart2', component_property='figure'),
+    # To define the target object that could affect the updates
     [Input(component_id='severityChecklist', component_property='values'),
     Input(component_id='dayChecklist', component_property='values'),
     Input(component_id='weatherChecklist', component_property='values'),
     Input(component_id='monthChecklist', component_property='values'),
-    Input(component_id='hourSlider', component_property='value'),])
-def updateBarChart2(severity, weekdays, weathers, months, time):
-    # The rangeslider is selects inclusively, but a python list stops before
-    # the last number in a range
-    hours = [i for i in range(time[0], time[1] + 1)]
-    
-   # Create a copy of the dataframe by filtering according to the values
-    # passed in.
-    # Important to create a copy rather than affect the global object.
-    acc2 = acc[['Accident_Severity', 'Weather_Conditions']][(acc['Accident_Severity'].isin(severity)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours))& (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]    
-    acc2['Total'] = 1
-    
-    # Once trace for each severity value
-    traces = []
-    
-    acc3 = acc2[['Accident_Severity','Weather_Conditions', 'Total']][acc['Weather_Conditions'].isin(range(1,7))].groupby(['Accident_Severity','Weather_Conditions']).sum(axis=0).reset_index()
-    #print(acc3)
-    def barText(row):
+    Input(component_id='hourSlider', component_property='value')])
+# The method for updating the barchart2
+def updateBarChart2(severities, weekdays, weathers, months, time):
+    # To define the dataset for flitering the data set fomr controls and remove unused data fields
+    accTemp = acc[['Accident_Severity', 'Weather_Conditions']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]    
+    # To add the data into dataset
+    accTemp['Total'] = 1
+    # To create the empty traces object for storing the processed data
+    traces = []    
+    # To filter unused data & get only required data field
+    accTemp_ = accTemp[['Accident_Severity','Weather_Conditions', 'Total']][acc['Weather_Conditions'].isin(range(1,7))].groupby(['Accident_Severity','Weather_Conditions']).sum(axis=0).reset_index()
+     # The method for processing the text when user hovering to the target
+    def text(row):
         return 'Over {:,} {} accidents happened in {} .'.format(row['Total'], row['Accident_Severity'].lower(), WEATHERS[row['Weather_Conditions']])
-    acc3['text'] = acc3.apply(barText, axis=1)
+    # To apply the set of text into dataset
+    accTemp_['text'] = accTemp_.apply(text, axis=1)
 
-    for sev in severity:
+    for severity in severities:
       traces.append({
-          'type' : 'bar',
-          'y' : acc3['Total'][acc3['Accident_Severity'] == sev],
-          'x' : acc3['Weather_Conditions'][acc3['Accident_Severity'] == sev].apply(lambda k: WEATHERS[k]),
-          #'text' : acc3['text'][acc3['Accident_Severity'] == sev],
-          #'hoverinfo' : 'text',
+          'type' : 'bar',# To define the type of chart
+          'y' : accTemp_['Total'][accTemp_['Accident_Severity'] == severity],
+          'x' : accTemp_['Weather_Conditions'][accTemp_['Accident_Severity'] == severity].apply(lambda k: WEATHERS[k]),
           'marker' : {
-              'color' : SEVERITY_LOOKUP[sev], # Use the colur lookup for consistency
+              'color' : SEVERITY_LOOKUP[severity], 
           'line' : {'width' : 3,
                     'color' : '#333'}},
-          'name' : sev,
+          'name' : severity
       })  
-
-   
+    
+    # To define all reuired fields for the barchart2
     fig = {'data' : traces,
           'layout' : {
-              'paper_bgcolor' : 'rgb(26,25,25)',
-              'plot_bgcolor' : 'rgb(26,25,25)',
+              'paper_bgcolor' : BACKGROUND_COLOUR ,
+              'plot_bgcolor' : BACKGROUND_COLOUR ,
               'font' : {
-                  'color' : 'rgb(250,250,250'
+                  'color' : COLOUR
               },
-              'height' : 500,
+              'height' : HEIGHT_OF_COMPONENT,
               'title' : 'Accidents by weather',
-              'margin' : { # Set margins to allow maximum space for the chart
+              'margin' : { 
                   'b' : 25,
                   'l' : 30,
                   't' : 70,
                   'r' : 0
               },
-              'legend' : { # Horizontal legens, positioned at the bottom to allow maximum space for the
-                           # chart
+              'legend' : { 
                   'orientation' : 'b',
                   'x' : 0,
                   'y' : 1.01,
                   'yanchor' : 'bottom',
                   },
+            # To enforce the tickvals & ticktext to show in graph
             'xaxis' : {
-                'tickvals' : sorted(acc3['Weather_Conditions'].apply(lambda k: WEATHERS[k])), # Force the tickvals & ticktext just in case
-                'ticktext' : sorted(acc3['Weather_Conditions'].apply(lambda k: WEATHERS[k])),
+                'tickvals' : sorted(accTemp_['Weather_Conditions'].apply(lambda k: WEATHERS[k])), 
+                'ticktext' : sorted(accTemp_['Weather_Conditions'].apply(lambda k: WEATHERS[k])),
                 'tickmode' : 'array',
                 'tickangle' : 4,
                 'fonts':{
-                  'size':8
+                  'size': FONT_SIZE
                 }
             }
           }}
-    
-    # Returns the figure into the 'figure' component property, update the bar
-    # chart
     return fig
 
-
-
-    
-@app.callback(Output("loading-output-1", "children"), [Input(component_id='severityChecklist', component_property='values'),
+@app.callback(
+    # To define the target object for the updates
+    Output(component_id='datatable-interactivity', component_property='data'),
+    # To define the target object that could affect the updates
+    [Input(component_id='severityChecklist', component_property='values'),
     Input(component_id='dayChecklist', component_property='values'),
     Input(component_id='weatherChecklist', component_property='values'),
     Input(component_id='monthChecklist', component_property='values'),
     Input(component_id='hourSlider', component_property='value'),])
-def input_triggers_spinner(severity, weekdays, weathers, months, time):
+# The method for updating the data table
+def updateDataTable(severities, weekdays, weathers, months, time):
+    # To return the data frame object directly by using the implemented filtering fuctions    
+    return (acc[(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin( [hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]).to_dict('records')
+
+# The loading callback function that aims to show the loading screen when any of control has been changed    
+@app.callback(
+    # To define the target object for the updates
+    Output("loading-output-1", "children"),
+    # To define the target object that could affect the updates
+    [Input(component_id='severityChecklist', component_property='values'),
+    Input(component_id='dayChecklist', component_property='values'),
+    Input(component_id='weatherChecklist', component_property='values'),
+    Input(component_id='monthChecklist', component_property='values'),
+    Input(component_id='hourSlider', component_property='value')])
+# The method for showing the loading screen
+def input_triggers_spinner(severities, weekdays, weathers, months, time):
     time.sleep(1)
     return 0
