@@ -59,8 +59,8 @@ COLOUR_SCALE = [[0, 'green'], [0.25, 'yellow'], [0.55, 'orange'], [0.8, 'brown']
 HEIGHT_OF_COMPONENT = 500
 
 # Golbal variable of map
-#MAP_STYLE = 'dark'
-MAP_STYLE = 'white'
+MAP_STYLE = 'dark'
+#MAP_STYLE = 'white'
 ZOOM = 5.2
 
 CENTER_LAT = 52.489 #Birmingham
