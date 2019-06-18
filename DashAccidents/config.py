@@ -23,7 +23,11 @@ GOOGLEMAP = "AIzaSyB-dPy4xZFJZ5wbpS_rQpFBTgGZt0C6zdY"
 
 ##### Pre-defined variables for web app layout
 # To define the colours for each type of accident
-SEVERITY_LOOKUP = { 'Fatal' : 'red', 'Serious' : 'orange', 'Slight' : 'yellow' }
+SEVERITY_LOOKUP = { 
+    'Fatal' : 'red', 
+    'Serious' : 'yellow', 
+    'Slight' : 'green'
+}
 
 SLIGHT_FRAC = 0.1
 SERIOUS_FRAC = 0.5
@@ -40,13 +44,23 @@ PADDING_LEFT = 15
 PADDING_RIGHT = 15
 
 # To define the global colour
-COLOUR = 'rgb(250,250,250)'
-BACKGROUND_COLOUR = 'rgb(26,25,25)'
+#COLOUR = 'rgb(250,250,250)'
+COLOUR = 'rgb(26,25,25)'
+#COLOUR = 'rgb(222,222,222)'
+#COLOUR = 'rgb(0,0,0)'
+#BACKGROUND_COLOUR = 'rgb(26,25,25)'
+#BACKGROUND_COLOUR = 'rgb(250,250,250)'
+BACKGROUND_COLOUR = 'rgb(222,222,222)'
+#BACKGROUND_COLOUR = 'rgb(160,207,223)'
+#COLOUR_SCALE = [[0, 'black'], [0.25, 'navy'], [0.55, 'purple'], [0.8, 'brown'], [1, 'yellow']]
+COLOUR_SCALE = [[0, 'green'], [0.25, 'yellow'], [0.55, 'orange'], [0.8, 'brown'], [1, 'red']]
 
 # To define the global size
 HEIGHT_OF_COMPONENT = 500
 
 # Golbal variable of map
+#MAP_STYLE = 'dark'
+MAP_STYLE = 'white'
 ZOOM = 5.2
 
 CENTER_LAT = 52.489 #Birmingham

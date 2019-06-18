@@ -17,7 +17,7 @@ from DashAccidents.config import *
 # The method for updating the barchart
 def updateBarChart(severities, weekdays, weathers, months, time):
     # To define the dataset for flitering the data set fomr controls and remove unused data fields
-    accTemp = DataFrame(acc[['Accident_Severity','Speed_limit','Number_of_Casualties']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))].groupby(['Accident_Severity','Speed_limit']).sum()).reset_index()
+    accTemp = DataFrame(acc[['Accident_Severity','Speed_limit','Number_of_Casualties']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Month'].isin(months))].groupby(['Accident_Severity', 'Speed_limit']).sum()).reset_index()
 
     # The method for processing the text when user hovering to the target
     def text(row):
@@ -85,7 +85,7 @@ def updateHeatmap(severities, weekdays, weathers, months, time):
     # To transfer the hours from time object
     hours = [hour for hour in range(time[0], time[1] + 1)]
     # To define the dataset for flitering the data set fomr controls and remove unused data fields
-    accTemp = DataFrame(acc[['Day_of_Week', 'Hour','Number_of_Casualties']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin(hours)) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))].groupby(['Day_of_Week', 'Hour']).sum()).reset_index()
+    accTemp = DataFrame(acc[['Day_of_Week', 'Hour','Number_of_Casualties']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Hour'].isin(hours)) & (acc['Month'].isin(months))].groupby(['Day_of_Week', 'Hour']).sum()).reset_index()
 
     # The method for processing the text when user hovering to the target
     def text(row):
@@ -113,7 +113,7 @@ def updateHeatmap(severities, weekdays, weathers, months, time):
         'z' : z,
         'text' : text,
         'hoverinfo' : 'text',
-        'colorscale' : [[0, 'rgb(0, 0, 0)'], [0.25, 'rgb(30, 0, 100)'], [0.55, 'rgb(120, 0, 100)'], [0.8, 'rgb(160, 90, 0)'], [1, 'rgb(230, 200, 0)']],
+        'colorscale' : COLOUR_SCALE,
     }]
     
     # To define all reuired fields for the heatmap
@@ -152,7 +152,7 @@ def updateHeatmap(severities, weekdays, weathers, months, time):
 # The method for updating the barchart
 def updateMapBox(severities, weekdays, weathers, months, time):     
     # To define the dataset for flitering the data set fomr controls and remove unused data fields
-    accTemp = acc[(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]
+    accTemp = acc[(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Month'].isin(months))]
 
     #def text(row):
     #    return '{} <br> ({},
@@ -218,7 +218,7 @@ def updateMapBox(severities, weekdays, weathers, months, time):
                 'lon' : CENTER_LON
             },
             'zoom' : ZOOM,
-            'style' : 'dark',   
+            #'style' : MAP_STYLE,   
         },
         'margin' : {'t' : 0,
                    'b' : 0,
@@ -248,7 +248,7 @@ def updateMapBox(severities, weekdays, weathers, months, time):
 # The method for updating the linechart
 def updateLineChart(severities, weekdays, weathers, months, time):
     # To define the dataset for flitering the data set fomr controls and remove unused data fields    
-    accTemp = acc[['Accident_Severity', 'Month']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))] 
+    accTemp = acc[['Accident_Severity', 'Month']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Month'].isin(months))] 
     # To add the data into dataset   
     accTemp['Total'] = 1
     # To create the empty traces object for storing the processed data
@@ -321,7 +321,7 @@ def updateLineChart(severities, weekdays, weathers, months, time):
 # The method for updating the barchart2
 def updateBarChart2(severities, weekdays, weathers, months, time):
     # To define the dataset for flitering the data set fomr controls and remove unused data fields
-    accTemp = acc[['Accident_Severity', 'Weather_Conditions']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]    
+    accTemp = acc[['Accident_Severity', 'Weather_Conditions']][(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Hour'].isin([hour for hour in range(time[0], time[1] + 1)])) & (acc['Month'].isin(months))]    
     # To add the data into dataset
     accTemp['Total'] = 1
     # To create the empty traces object for storing the processed data
@@ -393,7 +393,7 @@ def updateBarChart2(severities, weekdays, weathers, months, time):
 # The method for updating the data table
 def updateDataTable(severities, weekdays, weathers, months, time):
     # To return the data frame object directly by using the implemented filtering fuctions    
-    return (acc[(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Hour'].isin( [hour for hour in range(time[0], time[1] + 1)])) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Month'].isin(months))]).to_dict('records')
+    return (acc[(acc['Accident_Severity'].isin(severities)) & (acc['Day_of_Week'].isin(weekdays)) & (acc['Weather_Conditions'].isin(weathers)) & (acc['Hour'].isin( [hour for hour in range(time[0], time[1] + 1)])) & (acc['Month'].isin(months))]).to_dict('records')
 
 # The loading callback function that aims to show the loading screen when any of control has been changed    
 @app.callback(
