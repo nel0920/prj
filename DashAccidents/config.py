@@ -104,7 +104,7 @@ DAY = dict(zip(data_guide_days['label'], data_guide_days['code']))
 
 ##### To read different type of datasets in 2017
 # To read the traffic accident dataset of UK in 2017
-acc = read_csv(csvAccLoc, index_col = 0, low_memory = true, chunksize=30000).dropna(how='any', axis = 0)
+acc = read_csv(csvAccLoc, index_col = 0, low_memory = True, chunksize=30000).dropna(how='any', axis = 0)
 #cas = read_csv(csvCasLoc, index_col = 0, low_memory = False).dropna(how='any',
 #axis = 0)
 #vec = read_csv(csvVecLoc, index_col = 0, low_memory = False).dropna(how='any',
